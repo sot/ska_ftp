@@ -14,7 +14,7 @@ def test_roundtrip():
     local_filename = os.path.join(os.environ['HOME'], '.cshrc')
     lucky.put(local_filename, '/taldcroft/remote_cshrc')
     lucky.get('remote_cshrc', tmpfile.name)
-    lucky.ftp.delete('remote_cshrc')
+    lucky.delete('remote_cshrc')
 
     files_after = lucky.ls()
     lucky.close()

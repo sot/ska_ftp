@@ -1,6 +1,9 @@
-"""Light wrapper around Python ftplib to make it easier to use.
-
 """
+Light wrapper around Python ftplib to make it easier to use.  Just adds a few
+convenience methods to ftplib.FTP class: ls(), ls_full(), put(), get(), and cd().
+Also supports using a .netrc file which is parsed internally.
+"""
+
 import os
 import ftplib
 import contextlib
@@ -37,7 +40,7 @@ def parse_netrc(netrcfile=None):
         pass
     return netrc
 
-class FTP(object):
+class FTP(ftplib.FTP):
     """Initialize object for simpler ftp operations.
 
     The FTP object has an attribute ``ftp`` which is the actual ftplib.FTP()
@@ -61,38 +64,32 @@ class FTP(object):
             # Password requires that a user was specified
             if passwd is not None:
                 args.append(passwd)
-        ftp = ftplib.FTP(host)
-        ftp.login(*args)
-        self.ftp = ftp
+        ftplib.FTP.__init__(self, host)
+        self.login(*args)
+        self.ftp = self  # for back compatibility with initial release
 
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
 
         :param dirname: directory name
         """
-        self.ftp.cwd(dirname)
+        self.cwd(dirname)
 
-    def ls(self, dirname=''):
-        """List contents of directory ``dirname``.
-
-        Caveat: multiple spaces within filenames will be compressed to one
-        space.
+    def ls(self, dirname='', *args):
+        """List contents of directory ``dirname`` via NLST command.
 
         :param dirname: directory name
         :returns: list of file and/or directory names
         """
-        entries = self.lsf(dirname)
-        return [' '.join(x.split()[8:]) for x in entries]
+        return self.nlst(dirname, *args)
 
-    def ls_full(self, dirname=''):
+    def ls_full(self, dirname='', *args):
         """List full contents of directory ``dirname``.
 
         :param dirname: directory name
         :returns: list of full FTP output for LIST command
         """
-        entries = []
-        self.ftp.retrlines('LIST ' + dirname, entries.append)
-        return entries
+        return self.dir(dirname, *args)
 
     def put(self, localfile, remotefile=None):
         """Put the ``localfile`` to the FTP server as ``remotefile``.
@@ -103,7 +100,7 @@ class FTP(object):
         if remotefile is None:
             remotefile = os.path.basename(localfile)
         with contextlib.closing(open(localfile, 'rb')) as fh:
-            self.ftp.storbinary('STOR ' + remotefile, fh)
+            self.storbinary('STOR ' + remotefile, fh)
 
     def get(self, remotefile, localfile=None):
         """Get the ``remotefile`` from the FTP server as ``localfile`` on the local host.
@@ -114,9 +111,5 @@ class FTP(object):
         if localfile is None:
             localfile = os.path.basename(remotefile)
         with contextlib.closing(open(localfile, 'wb')) as fh:
-            self.ftp.retrbinary('RETR ' + remotefile, fh.write)
-
-    def close(self):
-        """Close the FTP connection."""
-        self.ftp.close()
+            self.retrbinary('RETR ' + remotefile, fh.write)
 
