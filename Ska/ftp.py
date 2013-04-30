@@ -8,6 +8,7 @@ import os
 import ftplib
 import contextlib
 
+
 def parse_netrc(netrcfile=None):
     """Get default user and password for an FTP server by parsing a .netrc file.
 
@@ -40,6 +41,7 @@ def parse_netrc(netrcfile=None):
         pass
     return netrc
 
+
 class FTP(ftplib.FTP):
     """Initialize object for simpler ftp operations.
 
@@ -50,8 +52,9 @@ class FTP(ftplib.FTP):
     :param user: user name (default=netrc value or anonymous)
     :param passwd: password (default=netrc value or anonymous@ )
     :param netrcfile: netrc file name (default=~/.netrc)
+    :param logger: logger object (e.g. pyyaks.logger.get_logger())
     """
-    def __init__(self, host, user=None, passwd=None, netrcfile=None):
+    def __init__(self, host, user=None, passwd=None, netrcfile=None, logger=None):
         auths = parse_netrc(netrcfile)
         if host in auths:
             if user is None:
@@ -67,12 +70,17 @@ class FTP(ftplib.FTP):
         ftplib.FTP.__init__(self, host)
         self.login(*args)
         self.ftp = self  # for back compatibility with initial release
+        self.logger = logger
+        if self.logger:
+            self.logger.info('Ska.ftp: log in to {} as {}'.format(host, user))
 
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
 
         :param dirname: directory name
         """
+        if self.logger:
+            self.logger.info('Ska.ftp: cd {}'.format(dirname))
         self.cwd(dirname)
 
     def ls(self, dirname='', *args):
@@ -81,6 +89,8 @@ class FTP(ftplib.FTP):
         :param dirname: directory name
         :returns: list of file and/or directory names
         """
+        if self.logger:
+            self.logger.info('Ska.ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
         return self.nlst(dirname, *args)
 
     def ls_full(self, dirname='', *args):
@@ -89,6 +99,8 @@ class FTP(ftplib.FTP):
         :param dirname: directory name
         :returns: list of full FTP output for LIST command
         """
+        if self.logger:
+            self.logger.info('Ska.ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
         return self.dir(dirname, *args)
 
     def put(self, localfile, remotefile=None):
@@ -99,17 +111,20 @@ class FTP(ftplib.FTP):
         """
         if remotefile is None:
             remotefile = os.path.basename(localfile)
+        if self.logger:
+            self.logger.info('Ska.ftp: put {} as {}'.format(localfile, remotefile))
         with contextlib.closing(open(localfile, 'rb')) as fh:
             self.storbinary('STOR ' + remotefile, fh)
 
     def get(self, remotefile, localfile=None):
         """Get the ``remotefile`` from the FTP server as ``localfile`` on the local host.
 
-        :param remotefile: file name on remote FTP host 
+        :param remotefile: file name on remote FTP host
         :param localfile: file name  on local host (default=remotefile)
         """
         if localfile is None:
             localfile = os.path.basename(remotefile)
+        if self.logger:
+            self.logger.info('Ska.ftp: get {} as {}'.format(remotefile, localfile))
         with contextlib.closing(open(localfile, 'wb')) as fh:
             self.retrbinary('RETR ' + remotefile, fh.write)
-
