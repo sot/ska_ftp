@@ -1,16 +1,18 @@
 import os
 import Ska.ftp
 import tempfile
+import pyyaks.logger
 
-from nose.tools import *
+logger = pyyaks.logger.get_logger()
 
-def test_roundtrip():
-    lucky = Ska.ftp.FTP('lucky')
+
+def roundtrip(logger=None):
+    lucky = Ska.ftp.FTP('lucky', logger=logger)
     lucky.cd('/taldcroft')
     files_before = lucky.ls()
 
     tmpfile = tempfile.NamedTemporaryFile()
-    
+
     local_filename = os.path.join(os.environ['HOME'], '.cshrc')
     lucky.put(local_filename, '/taldcroft/remote_cshrc')
     lucky.get('remote_cshrc', tmpfile.name)
@@ -22,5 +24,13 @@ def test_roundtrip():
     orig = open(local_filename).read()
     roundtrip = open(tmpfile.name).read()
 
-    assert_equal(files_before, files_after)
-    assert_equal(orig, roundtrip)
+    assert files_before == files_after
+    assert orig == roundtrip
+
+
+def test_roundtrip():
+    roundtrip(logger)
+
+
+def test_roundtrip_no_logger():
+    roundtrip()
