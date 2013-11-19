@@ -61,9 +61,6 @@ class SFTP(object):
             warnings.simplefilter('ignore', Crypto.pct_warnings.PowmInsecureWarning)
             import paramiko
 
-        # Paramiko seems to require logging to file ???
-        paramiko.util.log_to_file('/dev/null')
-
         auths = parse_netrc(netrcfile)
         if host in auths:
             if user is None:
