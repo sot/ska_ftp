@@ -4,6 +4,7 @@ import tarfile
 import cPickle as pickle
 from cStringIO import StringIO
 
+import pytest
 
 os.chdir(os.path.dirname(__file__))
 
@@ -11,6 +12,8 @@ NETRC = Ska.ftp.parse_netrc()
 USER = NETRC['lucky']['login']
 
 
+# Here for legacy, perhaps change to a different ftp host
+@pytest.mark.skipif(True, reason='Lucky no longer supports ftp')
 def test_tar():
     lucky = Ska.ftp.FTP('lucky')
     lucky.cd('/{}'.format(USER))
