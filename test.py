@@ -1,3 +1,4 @@
+import uuid
 import os
 import Ska.ftp
 import tempfile
@@ -5,16 +6,20 @@ import pyyaks.logger
 
 logger = pyyaks.logger.get_logger()
 
+NETRC = Ska.ftp.parse_netrc()
+USER = NETRC['lucky']['login']
 
-def roundtrip(logger=None):
-    lucky = Ska.ftp.FTP('lucky', logger=logger)
-    lucky.cd('/taldcroft')
+
+def roundtrip(FtpClass, logger=None):
+    homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + USER
+    lucky = FtpClass('lucky', logger=logger)
+    lucky.cd(homedir)
     files_before = lucky.ls()
 
     tmpfile = tempfile.NamedTemporaryFile()
 
     local_filename = os.path.join(os.environ['HOME'], '.cshrc')
-    lucky.put(local_filename, '/taldcroft/remote_cshrc')
+    lucky.put(local_filename, '{}/remote_cshrc'.format(homedir))
     lucky.get('remote_cshrc', tmpfile.name)
     lucky.delete('remote_cshrc')
 
@@ -29,8 +34,31 @@ def roundtrip(logger=None):
 
 
 def test_roundtrip():
-    roundtrip(logger)
+    # roundtrip(FtpClass=Ska.ftp.FTP, logger=logger)  # legacy of non-secure ftp
+    roundtrip(FtpClass=Ska.ftp.SFTP, logger=logger)
 
 
 def test_roundtrip_no_logger():
-    roundtrip()
+    # roundtrip(FtpClass=Ska.ftp.FTP)
+    roundtrip(FtpClass=Ska.ftp.SFTP)
+
+
+def test_sftp_mkdir_rmdir_rename():
+    homedir = '/home/{}'.format(USER)
+    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    lucky.cd(homedir)
+
+    tmpdir = str(uuid.uuid4())  # random remote dir name
+    lucky.mkdir(tmpdir)
+    assert tmpdir in lucky.ls()
+    lucky.rmdir(tmpdir)
+    assert tmpdir not in lucky.ls()
+
+    lucky.mkdir(tmpdir)
+    new = tmpdir + '-new'
+    lucky.rename(tmpdir, new)
+    assert new in lucky.ls()
+    assert tmpdir not in lucky.ls()
+    lucky.rmdir(new)
+
+    lucky.close()
