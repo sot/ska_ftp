@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(name='Ska.ftp',
       author='Tom Aldcroft',
-      description='Light wrapper around Python ftplib to make it easier to use',
+      description='Light wrapper around Python ftplib and paramiko.SFTPClient',
       author_email='taldcroft@cfa.harvard.edu',
       py_modules=['Ska.ftp'],
       version='0.04',
