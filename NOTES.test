@@ -1,0 +1,6 @@
+Get into a test Ska environment and do:
+
+  python setup.py install
+  py.test tests
+
+As usual with namespace packages there is no known way to reliably test in-place.
