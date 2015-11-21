@@ -9,6 +9,8 @@ import warnings
 import ftplib
 import contextlib
 
+__version__ = '0.4.1'
+
 
 def parse_netrc(netrcfile=None):
     """Get default user and password for an FTP server by parsing a .netrc file.
