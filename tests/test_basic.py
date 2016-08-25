@@ -62,3 +62,9 @@ def test_sftp_mkdir_rmdir_rename():
     lucky.rmdir(new)
 
     lucky.close()
+
+
+def test_no_recursion_to_console_when_already_gone():
+    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    del lucky.ftp
+    lucky.__del__()
