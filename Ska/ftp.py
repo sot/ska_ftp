@@ -82,11 +82,10 @@ class SFTP(object):
         """
         Delete object
         """
-        if hasattr(self, 'ftp') and hasattr(self.ftp, 'close'):
-            try:
-                self.ftp.close()
-            except:
-                pass
+        try:
+            self.close()
+        except:
+            pass
 
     def close(self):
         if hasattr(self, 'ftp') and hasattr(self.ftp, 'close'):
