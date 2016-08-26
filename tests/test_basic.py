@@ -62,3 +62,15 @@ def test_sftp_mkdir_rmdir_rename():
     lucky.rmdir(new)
 
     lucky.close()
+
+
+def test_ftp_session_already_gone():
+    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    # explicitly close paramiko channel, socket, and session
+    lucky.ftp.sock.get_transport().close()
+    lucky.ftp.sock.close()
+    lucky.ftp.close()
+    # delete ftp session
+    del lucky.ftp
+    # explicitly run __del__ method
+    lucky.__del__()
