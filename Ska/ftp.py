@@ -82,10 +82,11 @@ class SFTP(object):
         """
         Delete object
         """
-        try:
-            self.ftp.close()
-        except:
-            pass
+        if hasattr(self, 'ftp') and hasattr(self.ftp, 'close'):
+            try:
+                self.ftp.close()
+            except:
+                pass
 
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
