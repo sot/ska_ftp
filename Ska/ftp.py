@@ -88,6 +88,10 @@ class SFTP(object):
             except:
                 pass
 
+    def close(self):
+        if hasattr(self, 'ftp') and hasattr(self.ftp, 'close'):
+            self.ftp.close()
+
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
 
@@ -179,15 +183,6 @@ class SFTP(object):
         if self.logger:
             self.logger.info('Ska.ftp: rmdir {}'.format(path))
         self.ftp.rmdir(path)
-
-    def __getattr__(self, attr):
-        """
-        Fall through to SFTPClient methods, and fail if not found.
-        """
-        val = getattr(self.ftp, attr)
-        if self.logger:
-            self.logger.info('Ska.ftp: {}'.format(attr))
-        return val
 
 
 class FTP(ftplib.FTP):
