@@ -180,6 +180,8 @@ class SFTP(object):
         """
         Fall through to SFTPClient methods, and fail if not found.
         """
+        if (attr == 'ftp') or (attr == 'logger'):
+            raise AttributeError("'{}' attr missing from Ska.ftp object".format(attr))
         val = getattr(self.ftp, attr)
         if self.logger:
             self.logger.info('Ska.ftp: {}'.format(attr))
