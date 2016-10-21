@@ -14,7 +14,7 @@ setup(name='Ska.ftp',
       url='http://cxc.harvard.edu/mta/ASPECT/tool_doc/pydocs/Ska.ftp.html',
       version=__version__,
       zip_safe=False,
-      packages=['Ska.ftp', 'Ska.ftp.tests'],
+      packages=['Ska', 'Ska.ftp', 'Ska.ftp.tests'],
       tests_require=['pytest'],
       cmdclass=cmdclass,
       )
