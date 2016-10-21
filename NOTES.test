@@ -1,6 +1,5 @@
-Get into a test Ska environment and do:
+$ python setup.py test
 
-  python setup.py install
-  py.test tests
+  OR
 
-As usual with namespace packages there is no known way to reliably test in-place.
+$ python -e 'import Ska.ftp; Ska.ftp.test()'
