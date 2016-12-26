@@ -1,8 +1,8 @@
 import os
 import Ska.ftp
 import tarfile
-import cPickle as pickle
-from cStringIO import StringIO
+from six.moves import cPickle as pickle
+from six.moves import cStringIO as StringIO
 
 import pytest
 
