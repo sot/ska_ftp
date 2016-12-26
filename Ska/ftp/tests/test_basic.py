@@ -78,7 +78,7 @@ def test_delete_when_ftp_session_already_gone(capfd):
     # If Ska.ftp this hasn't been fixed to
     # avoid attribute recursion when deleting the Ska.ftp object
     # this prevents a failed test from taking a very long time.
-    sys.setrecursionlimit(100)
+    sys.setrecursionlimit(200)
     # And then delete the object.
     # The missing ftp attribute should raise an AttributeError, but it
     # is printed to stderr by __del__ instead of being raised
