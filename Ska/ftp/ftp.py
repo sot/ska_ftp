@@ -80,7 +80,10 @@ class SFTP(object):
         """
         Delete object
         """
-        self.ftp.close()
+        try:
+            self.ftp.close()
+        except:
+            pass
 
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
