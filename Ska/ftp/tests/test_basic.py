@@ -5,6 +5,7 @@ import re
 import Ska.ftp
 import tempfile
 import pyyaks.logger
+import pytest
 
 logger = pyyaks.logger.get_logger()
 
@@ -85,3 +86,19 @@ def test_delete_when_ftp_session_already_gone(capfd):
     del lucky
     out, err = capfd.readouterr()
     assert re.search('attr missing from Ska.ftp object', err) is not None
+
+
+def test_parse_netrc():
+    cwd = os.path.dirname(__file__)
+    netrc = Ska.ftp.parse_netrc(os.path.join(cwd, 'netrc'))
+    assert netrc == {'test1': {'account': None,
+                               'login': 'test1_login',
+                               'password': 'test1_password'},
+                     'test2': {'account': 'test2_account',
+                               'login': 'test2_login',
+                               'password': 'test2_password'}}
+
+
+def test_parse_netrc_fail():
+    with pytest.raises(IOError):
+        Ska.ftp.parse_netrc('does not exist')

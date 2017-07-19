@@ -15,6 +15,7 @@ setup(name='Ska.ftp',
       version=__version__,
       zip_safe=False,
       packages=['Ska', 'Ska.ftp', 'Ska.ftp.tests'],
+      package_data={'Ska.ftp.tests': ['netrc']},
       tests_require=['pytest'],
       cmdclass=cmdclass,
       )

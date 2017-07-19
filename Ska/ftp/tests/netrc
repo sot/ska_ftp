@@ -1,0 +1,5 @@
+machine  test1
+login    test1_login
+password test1_password
+
+machine test2 login test2_login account test2_account password test2_password
