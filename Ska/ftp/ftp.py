@@ -8,6 +8,7 @@ import os
 import warnings
 import ftplib
 import contextlib
+import netrc
 
 
 def parse_netrc(netrcfile=None):
@@ -23,24 +24,23 @@ def parse_netrc(netrcfile=None):
     :param netrcfile: name of the netrc file (default=~/.netrc)
     :returns: dict of configuration dicts
     """
-    netrc = dict()
-    if netrcfile is None:
-        netrcfile = os.path.join(os.environ['HOME'], '.netrc')
+    out = {}
     try:
-        for line in open(netrcfile):
-            try:
-                key, val = line.split()
-            except:
-                machine = None
-            else:
-                if key == 'machine':
-                    machine = val
-                    netrc[machine] = dict()
-                else:
-                    netrc[machine][key] = val
+        # Use stdlib to parse netrcfile
+        nrc = netrc.netrc(netrcfile)
+        for host, vals in nrc.hosts.items():
+            out[host] = {'login': vals[0],
+                         'account': vals[1],
+                         'password': vals[2]}
     except IOError:
-        pass
-    return netrc
+        if netrcfile is None:
+            # Retain historical behavior of doing nothing if there
+            # is no home directory .netrc.
+            pass
+        else:
+            raise
+
+    return out
 
 
 class SFTP(object):
