@@ -1,3 +1,4 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
 Light wrapper around Python ftplib to make it easier to use.  Just adds a few
 convenience methods to ftplib.FTP class: ls(), ls_full(), put(), get(), and cd().
