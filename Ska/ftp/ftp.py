@@ -79,8 +79,14 @@ class SFTP(object):
 
     def __del__(self):
         """
-        Delete object
+        Try to close object as part of delete
         """
+
+        # Make attempt to close an open session as part of __del__ cleanup.
+        # Handle this with a non-specific try/except in this case as we don't
+        # care about errors closing on cleanup, especially if the object is
+        # already gone.  Exceptions are ignored in __del__ anyway, but can be
+        # printed to console (which can cause errors for test checking)
         try:
             self.ftp.close()
         except:
