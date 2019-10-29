@@ -76,17 +76,9 @@ def test_delete_when_ftp_session_already_gone(capfd):
     lucky = Ska.ftp.SFTP('lucky', logger=logger)
     # Delete the paramiko session (without explicitly closing in this test case)
     del lucky.ftp
-    # Set the recursion limit
-    # If Ska.ftp this hasn't been fixed to
-    # avoid attribute recursion when deleting the Ska.ftp object
-    # this prevents a failed test from taking a very long time.
-    sys.setrecursionlimit(200)
-    # And then delete the object.
-    # The missing ftp attribute should raise an AttributeError, but it
-    # is printed to stderr by __del__ instead of being raised
     del lucky
     out, err = capfd.readouterr()
-    assert re.search('attr missing from Ska.ftp object', err) is not None
+    assert err == ''
 
 
 def test_parse_netrc():
