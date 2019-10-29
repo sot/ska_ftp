@@ -70,13 +70,13 @@ def test_sftp_mkdir_rmdir_rename():
 
 def test_delete_when_ftp_session_already_gone(capfd):
     """
-    Confirm that Ska.ftp does not end up with a recursive delete if the
-    paramiko ftp instance is removed before the Ska.ftp object is deleted
+    Confirm that Ska.ftp does not throw attribute errors when deleted.
     """
     lucky = Ska.ftp.SFTP('lucky', logger=logger)
     # Delete the paramiko session (without explicitly closing in this test case)
     del lucky.ftp
     del lucky
+    # Should see no errors in stderr when deleting the lucky object
     out, err = capfd.readouterr()
     assert err == ''
 
