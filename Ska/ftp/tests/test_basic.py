@@ -3,6 +3,8 @@ import uuid
 import os
 import sys
 import re
+import random
+from pathlib import Path
 import Ska.ftp
 import tempfile
 import pyyaks.logger
@@ -20,18 +22,22 @@ def roundtrip(FtpClass, logger=None):
     lucky.cd(homedir)
     files_before = lucky.ls()
 
-    tmpfile = tempfile.NamedTemporaryFile()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpfile_in = Path(tmpdir, 'tmpfile_in')
+        tmpfile_out = Path(tmpdir, 'tmpfile_out')
+        text = ''.join(random.choices('abcdefghijklmno', k=100))
+        with open(tmpfile_in, 'w') as fh:
+            fh.write(text)
 
-    local_filename = os.path.join(os.environ['HOME'], '.cshrc')
-    lucky.put(local_filename, '{}/remote_cshrc'.format(homedir))
-    lucky.get('remote_cshrc', tmpfile.name)
-    lucky.delete('remote_cshrc')
+        lucky.put(tmpfile_in, f'{homedir}/remote_test_file')
+        lucky.get('remote_test_file', tmpfile_out)
+        lucky.delete('remote_test_file')
 
-    files_after = lucky.ls()
-    lucky.close()
+        files_after = lucky.ls()
+        lucky.close()
 
-    orig = open(local_filename).read()
-    roundtrip = open(tmpfile.name).read()
+        orig = open(tmpfile_in).read()
+        roundtrip = open(tmpfile_out).read()
 
     assert files_before == files_after
     assert orig == roundtrip
