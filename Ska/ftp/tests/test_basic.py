@@ -3,6 +3,8 @@ import uuid
 import os
 import sys
 import re
+import random
+from pathlib import Path
 import Ska.ftp
 import tempfile
 import pyyaks.logger
@@ -12,26 +14,31 @@ logger = pyyaks.logger.get_logger()
 
 NETRC = Ska.ftp.parse_netrc()
 USER = NETRC['lucky']['login']
+LUCKY = 'lucky.cfa.harvard.edu'
 
 
 def roundtrip(FtpClass, logger=None):
     homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + USER
-    lucky = FtpClass('lucky', logger=logger)
+    lucky = FtpClass(LUCKY, logger=logger)
     lucky.cd(homedir)
     files_before = lucky.ls()
 
-    tmpfile = tempfile.NamedTemporaryFile()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpfile_in = Path(tmpdir, 'tmpfile_in')
+        tmpfile_out = Path(tmpdir, 'tmpfile_out')
+        text = ''.join(random.choices('abcdefghijklmno', k=100))
+        with open(tmpfile_in, 'w') as fh:
+            fh.write(text)
 
-    local_filename = os.path.join(os.environ['HOME'], '.cshrc')
-    lucky.put(local_filename, '{}/remote_cshrc'.format(homedir))
-    lucky.get('remote_cshrc', tmpfile.name)
-    lucky.delete('remote_cshrc')
+        lucky.put(tmpfile_in, f'{homedir}/remote_test_file')
+        lucky.get('remote_test_file', tmpfile_out)
+        lucky.delete('remote_test_file')
 
-    files_after = lucky.ls()
-    lucky.close()
+        files_after = lucky.ls()
+        lucky.close()
 
-    orig = open(local_filename).read()
-    roundtrip = open(tmpfile.name).read()
+        orig = open(tmpfile_in).read()
+        roundtrip = open(tmpfile_out).read()
 
     assert files_before == files_after
     assert orig == roundtrip
@@ -49,7 +56,7 @@ def test_roundtrip_no_logger():
 
 def test_sftp_mkdir_rmdir_rename():
     homedir = '/home/{}'.format(USER)
-    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
     lucky.cd(homedir)
 
     tmpdir = str(uuid.uuid4())  # random remote dir name
@@ -72,7 +79,7 @@ def test_delete_when_ftp_session_already_gone(capfd):
     """
     Confirm that Ska.ftp does not throw attribute errors when deleted.
     """
-    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
     # Delete the paramiko session (without explicitly closing in this test case)
     del lucky.ftp
     del lucky

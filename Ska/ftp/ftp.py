@@ -27,8 +27,10 @@ def parse_netrc(netrcfile=None):
     """
     out = {}
     try:
-        # Use stdlib to parse netrcfile
-        nrc = netrc.netrc(netrcfile)
+        # Use stdlib to parse netrcfile.  Before Python 3.8 netrc.netrc(None)
+        # uses $HOME to find ~/.netrc and this fails on Windows (should be
+        # $HOMEPATH). So just force the issue here if netrcfile is None.
+        nrc = netrc.netrc(netrcfile or os.path.expanduser('~/.netrc'))
         for host, vals in nrc.hosts.items():
             out[host] = {'login': vals[0],
                          'account': vals[1],
