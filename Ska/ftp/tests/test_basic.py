@@ -14,11 +14,12 @@ logger = pyyaks.logger.get_logger()
 
 NETRC = Ska.ftp.parse_netrc()
 USER = NETRC['lucky']['login']
+LUCKY = 'lucky.cfa.harvard.edu'
 
 
 def roundtrip(FtpClass, logger=None):
     homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + USER
-    lucky = FtpClass('lucky', logger=logger)
+    lucky = FtpClass(LUCKY, logger=logger)
     lucky.cd(homedir)
     files_before = lucky.ls()
 
@@ -55,7 +56,7 @@ def test_roundtrip_no_logger():
 
 def test_sftp_mkdir_rmdir_rename():
     homedir = '/home/{}'.format(USER)
-    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
     lucky.cd(homedir)
 
     tmpdir = str(uuid.uuid4())  # random remote dir name
@@ -78,7 +79,7 @@ def test_delete_when_ftp_session_already_gone(capfd):
     """
     Confirm that Ska.ftp does not throw attribute errors when deleted.
     """
-    lucky = Ska.ftp.SFTP('lucky', logger=logger)
+    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
     # Delete the paramiko session (without explicitly closing in this test case)
     del lucky.ftp
     del lucky
