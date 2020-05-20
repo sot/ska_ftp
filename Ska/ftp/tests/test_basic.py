@@ -1,8 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import uuid
 import os
-import sys
-import re
 import random
 from pathlib import Path
 import Ska.ftp
@@ -13,12 +11,12 @@ import pytest
 logger = pyyaks.logger.get_logger()
 
 NETRC = Ska.ftp.parse_netrc()
-USER = NETRC['lucky']['login']
 LUCKY = 'lucky.cfa.harvard.edu'
 
 
 def roundtrip(FtpClass, logger=None):
-    homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + USER
+    user = NETRC[LUCKY]['login']
+    homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + user
     lucky = FtpClass(LUCKY, logger=logger)
     lucky.cd(homedir)
     files_before = lucky.ls()
@@ -55,7 +53,8 @@ def test_roundtrip_no_logger():
 
 
 def test_sftp_mkdir_rmdir_rename():
-    homedir = '/home/{}'.format(USER)
+    user = NETRC[LUCKY]['login']
+    homedir = '/home/{}'.format(user)
     lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
     lucky.cd(homedir)
 
