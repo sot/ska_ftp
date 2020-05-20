@@ -101,3 +101,8 @@ def test_parse_netrc():
 def test_parse_netrc_fail():
     with pytest.raises(IOError):
         Ska.ftp.parse_netrc('does not exist')
+
+
+def test_no_user_no_passwd():
+    with pytest.raises(ValueError, match='must provide both user and passwd'):
+        Ska.ftp.SFTP('--host-not-in-netrc--')
