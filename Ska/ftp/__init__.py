@@ -3,7 +3,7 @@ import ska_helpers
 
 from .ftp import *
 
-__version__ = ska_helpers.get_version(__package__)
+__version__ = ska_helpers.get_version('Ska.ftp')
 
 
 def test(*args, **kwargs):
