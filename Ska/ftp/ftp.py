@@ -71,6 +71,10 @@ class SFTP(object):
             if passwd is None:
                 passwd = auths[host]['password']
 
+        if user is None or passwd is None:
+            raise ValueError('must provide both user and passwd (either directly '
+                             f'or via .netrc for host {host}')
+
         transport = paramiko.Transport((host, 22))
         transport.connect(username=user, password=passwd)
         self.ftp = paramiko.SFTPClient.from_transport(transport)
@@ -91,7 +95,7 @@ class SFTP(object):
         # printed to console (which can cause errors for test checking)
         try:
             self.ftp.close()
-        except:
+        except Exception:
             pass
 
     def cd(self, dirname):
