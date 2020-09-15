@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ska.ftp.ftp &#8212; Ska.ftp 3.5.4.dev11+geae5477 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-astropy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../../../index.html"><span id="logotext1">Ska! </span><span id="logotext2">Ska</span><span id="logotext3">.ftp</span></a>
+  <ul>
+    
+    <li><a class="home" title="Homepage" href="">
+        <span id="logotext1"></span><span id="logotext2"></span>
+    </a></li>
+    <li><a title="General Index" href="../../../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../../../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li>
+	<a href="../../../index.html">Ska.ftp 3.5.4.dev11+geae5477 documentation</a>
+	 &#187;
+      </li>
+      <li><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+      
+       
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Ska.ftp.ftp</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Light wrapper around Python ftplib to make it easier to use.  Just adds a few</span>
+<span class="sd">convenience methods to ftplib.FTP class: ls(), ls_full(), put(), get(), and cd().</span>
+<span class="sd">Also supports using a .netrc file which is parsed internally.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">ftplib</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">netrc</span>
+
+
+<div class="viewcode-block" id="parse_netrc"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.parse_netrc">[docs]</a><span class="k">def</span> <span class="nf">parse_netrc</span><span class="p">(</span><span class="n">netrcfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get default user and password for an FTP server by parsing a .netrc file.</span>
+
+<span class="sd">    The returned object is a dict with a key for each ``machine`` defined in</span>
+<span class="sd">    the netrc file.  The corresponding value is another dict containing all the</span>
+<span class="sd">    key/value pairs defined for that machine.</span>
+
+<span class="sd">    Note that the ``default`` token in the .netrc file is not parsed by this</span>
+<span class="sd">    routine.  See ``man netrc`` for information on the format of this file.</span>
+
+<span class="sd">    :param netrcfile: name of the netrc file (default=~/.netrc)</span>
+<span class="sd">    :returns: dict of configuration dicts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Use stdlib to parse netrcfile.  Before Python 3.8 netrc.netrc(None)</span>
+        <span class="c1"># uses $HOME to find ~/.netrc and this fails on Windows (should be</span>
+        <span class="c1"># $HOMEPATH). So just force the issue here if netrcfile is None.</span>
+        <span class="n">nrc</span> <span class="o">=</span> <span class="n">netrc</span><span class="o">.</span><span class="n">netrc</span><span class="p">(</span><span class="n">netrcfile</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~/.netrc&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">host</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">nrc</span><span class="o">.</span><span class="n">hosts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;login&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                         <span class="s1">&#39;account&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                         <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">vals</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">netrcfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Retain historical behavior of doing nothing if there</span>
+            <span class="c1"># is no home directory .netrc.</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="k">class</span> <span class="nc">SFTP</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize object for simpler secure-ftp operations.</span>
+
+<span class="sd">    The SFTP object has an attribute ``ftp`` which is the actual paramiko.SFTPClient</span>
+<span class="sd">    object.  This can be used for operations not supported by this class.</span>
+
+<span class="sd">    :param host: sftp host name</span>
+<span class="sd">    :param user: user name (default=netrc value or anonymous)</span>
+<span class="sd">    :param passwd: password (default=netrc value or anonymous@ )</span>
+<span class="sd">    :param netrcfile: netrc file name (default=~/.netrc)</span>
+<span class="sd">    :param logger: logger object (e.g. pyyaks.logger.get_logger())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">netrcfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">Crypto.pct_warnings</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">Crypto</span><span class="o">.</span><span class="n">pct_warnings</span><span class="o">.</span><span class="n">PowmInsecureWarning</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">paramiko</span>
+
+        <span class="n">auths</span> <span class="o">=</span> <span class="n">parse_netrc</span><span class="p">(</span><span class="n">netrcfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">auths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">user</span> <span class="o">=</span> <span class="n">auths</span><span class="p">[</span><span class="n">host</span><span class="p">][</span><span class="s1">&#39;login&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">passwd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">passwd</span> <span class="o">=</span> <span class="n">auths</span><span class="p">[</span><span class="n">host</span><span class="p">][</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">passwd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;must provide both user and passwd (either directly &#39;</span>
+                             <span class="sa">f</span><span class="s1">&#39;or via .netrc for host </span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">transport</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">Transport</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="mi">22</span><span class="p">))</span>
+        <span class="n">transport</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">passwd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SFTPClient</span><span class="o">.</span><span class="n">from_transport</span><span class="p">(</span><span class="n">transport</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: log in to </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to close object as part of delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Make attempt to close an open session as part of __del__ cleanup.</span>
+        <span class="c1"># Handle this with a non-specific try/except in this case as we don&#39;t</span>
+        <span class="c1"># care about errors closing on cleanup, especially if the object is</span>
+        <span class="c1"># already gone.  Exceptions are ignored in __del__ anyway, but can be</span>
+        <span class="c1"># printed to console (which can cause errors for test checking)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change to specified directory ``dirname``.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: cd </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List contents of directory ``dirname`` via NLST command.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        :returns: list of file and/or directory names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: ls </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ls_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List full contents of directory ``dirname``.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        :returns: list of full FTP output for LIST command</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: ls </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">longname</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">listdir_attr</span><span class="p">(</span><span class="n">dirname</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">localfile</span><span class="p">,</span> <span class="n">remotefile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">confirm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Put the ``localfile`` to the FTP server as ``remotefile``.</span>
+
+<span class="sd">        :param localfile: file name  on local host</span>
+<span class="sd">        :param remotefile: file name on remote FTP host (default=localfile)</span>
+<span class="sd">        :param callback: optional callback function that accepts bytes transferred so far</span>
+<span class="sd">        :param confirm: confirm file size after transfer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">remotefile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">remotefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">localfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: put </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localfile</span><span class="p">,</span> <span class="n">remotefile</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">localfile</span><span class="p">,</span> <span class="n">remotefile</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">confirm</span><span class="o">=</span><span class="n">confirm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remotefile</span><span class="p">,</span> <span class="n">localfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the ``remotefile`` from the FTP server as ``localfile`` on the local host.</span>
+
+<span class="sd">        :param remotefile: file name on remote FTP host</span>
+<span class="sd">        :param localfile: file name  on local host (default=remotefile)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">localfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">localfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">remotefile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: get </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotefile</span><span class="p">,</span> <span class="n">localfile</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remotefile</span><span class="p">,</span> <span class="n">localfile</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make remote directory</span>
+
+<span class="sd">        :param remotedir: dir name on remote FTP host</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: mkdir </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">remotedir</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oldpath</span><span class="p">,</span> <span class="n">newpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rename remote ``oldpath`` to ``newpath``</span>
+
+<span class="sd">        :param oldpath: old path on remote</span>
+<span class="sd">        :param newpath: new path on remote</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: rename </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">oldpath</span><span class="p">,</span> <span class="n">newpath</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">oldpath</span><span class="p">,</span> <span class="n">newpath</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete ``path`` file</span>
+
+<span class="sd">        :param path: path on remote to delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: delete </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rmdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete ``path`` directory</span>
+
+<span class="sd">        :param path: path on remote to delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: rmdir </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fall through to SFTPClient methods, and fail if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;ftp&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39; attr missing from Ska.ftp object&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ftp</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">val</span>
+
+
+<div class="viewcode-block" id="FTP"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP">[docs]</a><span class="k">class</span> <span class="nc">FTP</span><span class="p">(</span><span class="n">ftplib</span><span class="o">.</span><span class="n">FTP</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialize object for simpler ftp operations.</span>
+
+<span class="sd">    The FTP object has an attribute ``ftp`` which is the actual ftplib.FTP()</span>
+<span class="sd">    object.  This can be used for operations not supported by this class.</span>
+
+<span class="sd">    :param host: ftp host name</span>
+<span class="sd">    :param user: user name (default=netrc value or anonymous)</span>
+<span class="sd">    :param passwd: password (default=netrc value or anonymous@ )</span>
+<span class="sd">    :param netrcfile: netrc file name (default=~/.netrc)</span>
+<span class="sd">    :param logger: logger object (e.g. pyyaks.logger.get_logger())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">netrcfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">auths</span> <span class="o">=</span> <span class="n">parse_netrc</span><span class="p">(</span><span class="n">netrcfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">auths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">user</span> <span class="o">=</span> <span class="n">auths</span><span class="p">[</span><span class="n">host</span><span class="p">][</span><span class="s1">&#39;login&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">passwd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">passwd</span> <span class="o">=</span> <span class="n">auths</span><span class="p">[</span><span class="n">host</span><span class="p">][</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+            <span class="c1"># Password requires that a user was specified</span>
+            <span class="k">if</span> <span class="n">passwd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">passwd</span><span class="p">)</span>
+        <span class="n">ftplib</span><span class="o">.</span><span class="n">FTP</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ftp</span> <span class="o">=</span> <span class="bp">self</span>  <span class="c1"># for back compatibility with initial release</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: log in to </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FTP.cd"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP.cd">[docs]</a>    <span class="k">def</span> <span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change to specified directory ``dirname``.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: cd </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cwd</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FTP.ls"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP.ls">[docs]</a>    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List contents of directory ``dirname`` via NLST command.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        :returns: list of file and/or directory names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: ls </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlst</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FTP.ls_full"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP.ls_full">[docs]</a>    <span class="k">def</span> <span class="nf">ls_full</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List full contents of directory ``dirname``.</span>
+
+<span class="sd">        :param dirname: directory name</span>
+<span class="sd">        :returns: list of full FTP output for LIST command</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: ls </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FTP.put"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">localfile</span><span class="p">,</span> <span class="n">remotefile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Put the ``localfile`` to the FTP server as ``remotefile``.</span>
+
+<span class="sd">        :param localfile: file name  on local host</span>
+<span class="sd">        :param remotefile: file name on remote FTP host (default=localfile)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">remotefile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">remotefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">localfile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: put </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localfile</span><span class="p">,</span> <span class="n">remotefile</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">localfile</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storbinary</span><span class="p">(</span><span class="s1">&#39;STOR &#39;</span> <span class="o">+</span> <span class="n">remotefile</span><span class="p">,</span> <span class="n">fh</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FTP.get"><a class="viewcode-back" href="../../../index.html#Ska.ftp.ftp.FTP.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remotefile</span><span class="p">,</span> <span class="n">localfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the ``remotefile`` from the FTP server as ``localfile`` on the local host.</span>
+
+<span class="sd">        :param remotefile: file name on remote FTP host</span>
+<span class="sd">        :param localfile: file name  on local host (default=remotefile)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">localfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">localfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">remotefile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Ska.ftp: get </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotefile</span><span class="p">,</span> <span class="n">localfile</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">localfile</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">retrbinary</span><span class="p">(</span><span class="s1">&#39;RETR &#39;</span> <span class="o">+</span> <span class="n">remotefile</span><span class="p">,</span> <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">)</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+
+
+<form action="../../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right"> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2020, Tom Aldcroft.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+  </p>
+</footer>
+  </body>
+</html>
