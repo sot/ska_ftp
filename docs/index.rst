@@ -1,16 +1,16 @@
-:mod:`Ska.ftp`
+:mod:`ska_ftp`
 ======================
 
-.. automodule:: Ska.ftp.ftp
+.. automodule:: ska_ftp.ftp
 
 Example
 ----------
 ::
 
     import os
-    import Ska.ftp
+    import ska_ftp
 
-    lucky = Ska.ftp.FTP('lucky')
+    lucky = ska_ftp.FTP('lucky')
 
     lucky.cd('/taldcroft')
     print lucky.ls()
