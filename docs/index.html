@@ -4,16 +4,16 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ska.ftp &#8212; Ska.ftp 3.6.0 documentation</title>
-    <link rel="stylesheet" href="_static/bootstrap-astropy.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>ska_ftp &#8212; ska_ftp 4.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-astropy.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <script type="text/javascript" src="_static/copybutton.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -22,7 +22,7 @@
 
   </head><body>
 <div class="topbar">
-  <a class="brand" title="Documentation Home" href="#"><span id="logotext1">Ska! </span><span id="logotext2">Ska</span><span id="logotext3">.ftp</span></a>
+  <a class="brand" title="Documentation Home" href="#"><span id="logotext1">Ska! </span><span id="logotext2">ska_ftp</span><span id="logotext3"></span></a>
   <ul>
     
     <li><a class="home" title="Homepage" href="https://cxc.cfa.harvard.edu/mta/ASPECT/tool_doc">
@@ -47,7 +47,7 @@
     <h3>Navigation</h3>
     <ul>
       <li>
-	<a href="#">Ska.ftp 3.6.0 documentation</a>
+	<a href="#">ska_ftp 4.0.0 documentation</a>
 	 &#187;
       </li>
       
@@ -61,17 +61,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-Ska.ftp.ftp">
-<span id="ska-ftp"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">Ska.ftp</span></code><a class="headerlink" href="#module-Ska.ftp.ftp" title="Permalink to this headline">¶</a></h1>
+  <section id="module-ska_ftp.ftp">
+<span id="ska-ftp"></span><h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">ska_ftp</span></code><a class="headerlink" href="#module-ska_ftp.ftp" title="Permalink to this headline">¶</a></h1>
 <p>Light wrapper around Python ftplib to make it easier to use.  Just adds a few
 convenience methods to ftplib.FTP class: ls(), ls_full(), put(), get(), and cd().
 Also supports using a .netrc file which is parsed internally.</p>
-<div class="section" id="example">
+<section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">Ska.ftp</span>
+<span class="kn">import</span> <span class="nn">ska_ftp</span>
 
-<span class="n">lucky</span> <span class="o">=</span> <span class="n">Ska</span><span class="o">.</span><span class="n">ftp</span><span class="o">.</span><span class="n">FTP</span><span class="p">(</span><span class="s1">&#39;lucky&#39;</span><span class="p">)</span>
+<span class="n">lucky</span> <span class="o">=</span> <span class="n">ska_ftp</span><span class="o">.</span><span class="n">FTP</span><span class="p">(</span><span class="s1">&#39;lucky&#39;</span><span class="p">)</span>
 
 <span class="n">lucky</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="s1">&#39;/taldcroft&#39;</span><span class="p">)</span>
 <span class="nb">print</span> <span class="n">lucky</span><span class="o">.</span><span class="n">ls</span><span class="p">()</span>
@@ -89,8 +89,8 @@ Also supports using a .netrc file which is parsed internally.</p>
 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;remote_cshrc&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="netrc-file">
+</section>
+<section id="netrc-file">
 <h2>Netrc file<a class="headerlink" href="#netrc-file" title="Permalink to this headline">¶</a></h2>
 <p>The user netrc file (typically ~/.netrc) can be used to determine the username and
 password for a particular FTP server.  This file <em>must</em> be set to be readable
@@ -104,12 +104,12 @@ only by the user for a minimal level of security, e.g.</p>
 <span class="n">password</span> <span class="n">not_mY_pass1word</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="classes">
+</section>
+<section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="Ska.ftp.ftp.FTP">
-<em class="property">class </em><code class="sig-prename descclassname">Ska.ftp.ftp.</code><code class="sig-name descname">FTP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em>, <em class="sig-param"><span class="n">user</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">passwd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">netrcfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">ska_ftp.ftp.</span></span><span class="sig-name descname"><span class="pre">FTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">netrcfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize object for simpler ftp operations.</p>
 <p>The FTP object has an attribute <code class="docutils literal notranslate"><span class="pre">ftp</span></code> which is the actual ftplib.FTP()
 object.  This can be used for operations not supported by this class.</p>
@@ -125,8 +125,8 @@ object.  This can be used for operations not supported by this class.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="Ska.ftp.ftp.FTP.cd">
-<code class="sig-name descname">cd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dirname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP.cd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP.cd" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP.cd">
+<span class="sig-name descname"><span class="pre">cd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP.cd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP.cd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change to specified directory <code class="docutils literal notranslate"><span class="pre">dirname</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -136,8 +136,8 @@ object.  This can be used for operations not supported by this class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="Ska.ftp.ftp.FTP.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remotefile</span></em>, <em class="sig-param"><span class="n">localfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP.get" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remotefile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">localfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the <code class="docutils literal notranslate"><span class="pre">remotefile</span></code> from the FTP server as <code class="docutils literal notranslate"><span class="pre">localfile</span></code> on the local host.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -150,8 +150,8 @@ object.  This can be used for operations not supported by this class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="Ska.ftp.ftp.FTP.ls">
-<code class="sig-name descname">ls</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dirname</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP.ls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP.ls" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP.ls">
+<span class="sig-name descname"><span class="pre">ls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP.ls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP.ls" title="Permalink to this definition">¶</a></dt>
 <dd><p>List contents of directory <code class="docutils literal notranslate"><span class="pre">dirname</span></code> via NLST command.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -164,8 +164,8 @@ object.  This can be used for operations not supported by this class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="Ska.ftp.ftp.FTP.ls_full">
-<code class="sig-name descname">ls_full</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dirname</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP.ls_full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP.ls_full" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP.ls_full">
+<span class="sig-name descname"><span class="pre">ls_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP.ls_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP.ls_full" title="Permalink to this definition">¶</a></dt>
 <dd><p>List full contents of directory <code class="docutils literal notranslate"><span class="pre">dirname</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -178,8 +178,8 @@ object.  This can be used for operations not supported by this class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="Ska.ftp.ftp.FTP.put">
-<code class="sig-name descname">put</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">localfile</span></em>, <em class="sig-param"><span class="n">remotefile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#FTP.put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.FTP.put" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.FTP.put">
+<span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">localfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remotefile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#FTP.put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.FTP.put" title="Permalink to this definition">¶</a></dt>
 <dd><p>Put the <code class="docutils literal notranslate"><span class="pre">localfile</span></code> to the FTP server as <code class="docutils literal notranslate"><span class="pre">remotefile</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -193,12 +193,12 @@ object.  This can be used for operations not supported by this class.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="functions">
+</section>
+<section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="Ska.ftp.ftp.parse_netrc">
-<code class="sig-prename descclassname">Ska.ftp.ftp.</code><code class="sig-name descname">parse_netrc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">netrcfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Ska/ftp/ftp.html#parse_netrc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Ska.ftp.ftp.parse_netrc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ska_ftp.ftp.parse_netrc">
+<span class="sig-prename descclassname"><span class="pre">ska_ftp.ftp.</span></span><span class="sig-name descname"><span class="pre">parse_netrc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">netrcfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ska_ftp/ftp.html#parse_netrc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ska_ftp.ftp.parse_netrc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get default user and password for an FTP server by parsing a .netrc file.</p>
 <p>The returned object is a dict with a key for each <code class="docutils literal notranslate"><span class="pre">machine</span></code> defined in
 the netrc file.  The corresponding value is another dict containing all the
@@ -215,8 +215,8 @@ routine.  See <code class="docutils literal notranslate"><span class="pre">man</
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -226,7 +226,7 @@ routine.  See <code class="docutils literal notranslate"><span class="pre">man</
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Ska.ftp</span></code></a><ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ska_ftp</span></code></a><ul>
 <li><a class="reference internal" href="#example">Example</a></li>
 <li><a class="reference internal" href="#netrc-file">Netrc file</a></li>
 <li><a class="reference internal" href="#classes">Classes</a></li>
@@ -259,7 +259,7 @@ routine.  See <code class="docutils literal notranslate"><span class="pre">man</
     <a href="#">Back to Top</a></p>
   <p>
     &copy; Copyright 2020, Tom Aldcroft.<br/>
-    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 3.1.2. &nbsp;
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 4.2.0. &nbsp;
   </p>
 </footer>
   </body>
