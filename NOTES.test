@@ -2,4 +2,4 @@ $ python setup.py test
 
   OR
 
-$ python -e 'import Ska.ftp; Ska.ftp.test()'
+$ python -e 'import ska_ftp; ska_ftp.test()'

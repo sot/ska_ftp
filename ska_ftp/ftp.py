@@ -81,7 +81,7 @@ class SFTP(object):
 
         self.logger = logger
         if self.logger:
-            self.logger.info('Ska.ftp: log in to {} as {}'.format(host, user))
+            self.logger.info('ska_ftp: log in to {} as {}'.format(host, user))
 
     def __del__(self):
         """
@@ -104,7 +104,7 @@ class SFTP(object):
         :param dirname: directory name
         """
         if self.logger:
-            self.logger.info('Ska.ftp: cd {}'.format(dirname))
+            self.logger.info('ska_ftp: cd {}'.format(dirname))
         self.ftp.chdir(dirname)
 
     def ls(self, dirname='.'):
@@ -114,7 +114,7 @@ class SFTP(object):
         :returns: list of file and/or directory names
         """
         if self.logger:
-            self.logger.info('Ska.ftp: ls {}'.format(dirname))
+            self.logger.info('ska_ftp: ls {}'.format(dirname))
         return self.ftp.listdir(dirname)
 
     def ls_full(self, dirname='.'):
@@ -124,7 +124,7 @@ class SFTP(object):
         :returns: list of full FTP output for LIST command
         """
         if self.logger:
-            self.logger.info('Ska.ftp: ls {}'.format(dirname))
+            self.logger.info('ska_ftp: ls {}'.format(dirname))
         return [x.longname for x in self.ftp.listdir_attr(dirname)]
 
     def put(self, localfile, remotefile=None, callback=None, confirm=True):
@@ -138,7 +138,7 @@ class SFTP(object):
         if remotefile is None:
             remotefile = os.path.basename(localfile)
         if self.logger:
-            self.logger.info('Ska.ftp: put {} as {}'.format(localfile, remotefile))
+            self.logger.info('ska_ftp: put {} as {}'.format(localfile, remotefile))
         self.ftp.put(localfile, remotefile, callback=callback, confirm=confirm)
 
     def get(self, remotefile, localfile=None, callback=None):
@@ -150,7 +150,7 @@ class SFTP(object):
         if localfile is None:
             localfile = os.path.basename(remotefile)
         if self.logger:
-            self.logger.info('Ska.ftp: get {} as {}'.format(remotefile, localfile))
+            self.logger.info('ska_ftp: get {} as {}'.format(remotefile, localfile))
         self.ftp.get(remotefile, localfile, callback=callback)
 
     def mkdir(self, remotedir):
@@ -159,7 +159,7 @@ class SFTP(object):
         :param remotedir: dir name on remote FTP host
         """
         if self.logger:
-            self.logger.info('Ska.ftp: mkdir {}'.format(remotedir))
+            self.logger.info('ska_ftp: mkdir {}'.format(remotedir))
         self.ftp.mkdir(remotedir)
 
     def rename(self, oldpath, newpath):
@@ -169,7 +169,7 @@ class SFTP(object):
         :param newpath: new path on remote
         """
         if self.logger:
-            self.logger.info('Ska.ftp: rename {} {}'.format(oldpath, newpath))
+            self.logger.info('ska_ftp: rename {} {}'.format(oldpath, newpath))
         self.ftp.rename(oldpath, newpath)
 
     def delete(self, path):
@@ -178,7 +178,7 @@ class SFTP(object):
         :param path: path on remote to delete
         """
         if self.logger:
-            self.logger.info('Ska.ftp: delete {}'.format(path))
+            self.logger.info('ska_ftp: delete {}'.format(path))
         self.ftp.remove(path)
 
     def rmdir(self, path):
@@ -187,7 +187,7 @@ class SFTP(object):
         :param path: path on remote to delete
         """
         if self.logger:
-            self.logger.info('Ska.ftp: rmdir {}'.format(path))
+            self.logger.info('ska_ftp: rmdir {}'.format(path))
         self.ftp.rmdir(path)
 
     def __getattr__(self, attr):
@@ -195,10 +195,10 @@ class SFTP(object):
         Fall through to SFTPClient methods, and fail if not found.
         """
         if (attr == 'ftp') or (attr == 'logger'):
-            raise AttributeError("'{}' attr missing from Ska.ftp object".format(attr))
+            raise AttributeError("'{}' attr missing from ska_ftp object".format(attr))
         val = getattr(self.ftp, attr)
         if self.logger:
-            self.logger.info('Ska.ftp: {}'.format(attr))
+            self.logger.info('ska_ftp: {}'.format(attr))
         return val
 
 
@@ -232,7 +232,7 @@ class FTP(ftplib.FTP):
         self.ftp = self  # for back compatibility with initial release
         self.logger = logger
         if self.logger:
-            self.logger.info('Ska.ftp: log in to {} as {}'.format(host, user))
+            self.logger.info('ska_ftp: log in to {} as {}'.format(host, user))
 
     def cd(self, dirname):
         """Change to specified directory ``dirname``.
@@ -240,7 +240,7 @@ class FTP(ftplib.FTP):
         :param dirname: directory name
         """
         if self.logger:
-            self.logger.info('Ska.ftp: cd {}'.format(dirname))
+            self.logger.info('ska_ftp: cd {}'.format(dirname))
         self.cwd(dirname)
 
     def ls(self, dirname='', *args):
@@ -250,7 +250,7 @@ class FTP(ftplib.FTP):
         :returns: list of file and/or directory names
         """
         if self.logger:
-            self.logger.info('Ska.ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
+            self.logger.info('ska_ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
         return self.nlst(dirname, *args)
 
     def ls_full(self, dirname='', *args):
@@ -260,7 +260,7 @@ class FTP(ftplib.FTP):
         :returns: list of full FTP output for LIST command
         """
         if self.logger:
-            self.logger.info('Ska.ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
+            self.logger.info('ska_ftp: ls {} {}'.format(dirname, ' '.join(str(x) for x in args)))
         return self.dir(dirname, *args)
 
     def put(self, localfile, remotefile=None):
@@ -272,7 +272,7 @@ class FTP(ftplib.FTP):
         if remotefile is None:
             remotefile = os.path.basename(localfile)
         if self.logger:
-            self.logger.info('Ska.ftp: put {} as {}'.format(localfile, remotefile))
+            self.logger.info('ska_ftp: put {} as {}'.format(localfile, remotefile))
         with contextlib.closing(open(localfile, 'rb')) as fh:
             self.storbinary('STOR ' + remotefile, fh)
 
@@ -285,6 +285,6 @@ class FTP(ftplib.FTP):
         if localfile is None:
             localfile = os.path.basename(remotefile)
         if self.logger:
-            self.logger.info('Ska.ftp: get {} as {}'.format(remotefile, localfile))
+            self.logger.info('ska_ftp: get {} as {}'.format(remotefile, localfile))
         with contextlib.closing(open(localfile, 'wb')) as fh:
             self.retrbinary('RETR ' + remotefile, fh.write)

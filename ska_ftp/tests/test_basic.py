@@ -3,20 +3,20 @@ import uuid
 import os
 import random
 from pathlib import Path
-import Ska.ftp
+import ska_ftp
 import tempfile
 import pyyaks.logger
 import pytest
 
 logger = pyyaks.logger.get_logger()
 
-NETRC = Ska.ftp.parse_netrc()
+NETRC = ska_ftp.parse_netrc()
 LUCKY = 'lucky.cfa.harvard.edu'
 
 
 def roundtrip(FtpClass, logger=None):
     user = NETRC[LUCKY]['login']
-    homedir = ('/home/' if FtpClass is Ska.ftp.SFTP else '/') + user
+    homedir = ('/home/' if FtpClass is ska_ftp.SFTP else '/') + user
     lucky = FtpClass(LUCKY, logger=logger)
     lucky.cd(homedir)
     files_before = lucky.ls()
@@ -43,19 +43,19 @@ def roundtrip(FtpClass, logger=None):
 
 
 def test_roundtrip():
-    # roundtrip(FtpClass=Ska.ftp.FTP, logger=logger)  # legacy of non-secure ftp
-    roundtrip(FtpClass=Ska.ftp.SFTP, logger=logger)
+    # roundtrip(FtpClass=ska_ftp.FTP, logger=logger)  # legacy of non-secure ftp
+    roundtrip(FtpClass=ska_ftp.SFTP, logger=logger)
 
 
 def test_roundtrip_no_logger():
-    # roundtrip(FtpClass=Ska.ftp.FTP)
-    roundtrip(FtpClass=Ska.ftp.SFTP)
+    # roundtrip(FtpClass=ska_ftp.FTP)
+    roundtrip(FtpClass=ska_ftp.SFTP)
 
 
 def test_sftp_mkdir_rmdir_rename():
     user = NETRC[LUCKY]['login']
     homedir = '/home/{}'.format(user)
-    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
+    lucky = ska_ftp.SFTP(LUCKY, logger=logger)
     lucky.cd(homedir)
 
     tmpdir = str(uuid.uuid4())  # random remote dir name
@@ -76,9 +76,9 @@ def test_sftp_mkdir_rmdir_rename():
 
 def test_delete_when_ftp_session_already_gone(capfd):
     """
-    Confirm that Ska.ftp does not throw attribute errors when deleted.
+    Confirm that ska_ftp does not throw attribute errors when deleted.
     """
-    lucky = Ska.ftp.SFTP(LUCKY, logger=logger)
+    lucky = ska_ftp.SFTP(LUCKY, logger=logger)
     # Delete the paramiko session (without explicitly closing in this test case)
     del lucky.ftp
     del lucky
@@ -89,7 +89,7 @@ def test_delete_when_ftp_session_already_gone(capfd):
 
 def test_parse_netrc():
     cwd = os.path.dirname(__file__)
-    netrc = Ska.ftp.parse_netrc(os.path.join(cwd, 'netrc'))
+    netrc = ska_ftp.parse_netrc(os.path.join(cwd, 'netrc'))
     assert netrc == {'test1': {'account': None,
                                'login': 'test1_login',
                                'password': 'test1_password'},
@@ -100,9 +100,9 @@ def test_parse_netrc():
 
 def test_parse_netrc_fail():
     with pytest.raises(IOError):
-        Ska.ftp.parse_netrc('does not exist')
+        ska_ftp.parse_netrc('does not exist')
 
 
 def test_no_user_no_passwd():
     with pytest.raises(ValueError, match='must provide both user and passwd'):
-        Ska.ftp.SFTP('--host-not-in-netrc--')
+        ska_ftp.SFTP('--host-not-in-netrc--')
