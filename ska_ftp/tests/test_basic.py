@@ -90,7 +90,7 @@ def test_delete_when_ftp_session_already_gone(capfd):
 def test_parse_netrc():
     cwd = os.path.dirname(__file__)
     netrc = ska_ftp.parse_netrc(os.path.join(cwd, 'netrc'))
-    assert netrc == {'test1': {'account': None,
+    assert netrc == {'test1': {'account': '',
                                'login': 'test1_login',
                                'password': 'test1_password'},
                      'test2': {'account': 'test2_account',
