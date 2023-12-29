@@ -10,11 +10,10 @@ import pytest
 
 logger = pyyaks.logger.get_logger()
 
-NETRC = ska_ftp.parse_netrc()
 LUCKY = 'lucky.cfa.harvard.edu'
 
 
-def roundtrip(FtpClass, logger=None):
+def roundtrip(NETRC, FtpClass, logger=None):
     user = NETRC[LUCKY]['login']
     homedir = ('/home/' if FtpClass is ska_ftp.SFTP else '/') + user
     lucky = FtpClass(LUCKY, logger=logger)
@@ -42,17 +41,17 @@ def roundtrip(FtpClass, logger=None):
     assert orig == roundtrip
 
 
-def test_roundtrip():
+def test_roundtrip(NETRC):
     # roundtrip(FtpClass=ska_ftp.FTP, logger=logger)  # legacy of non-secure ftp
-    roundtrip(FtpClass=ska_ftp.SFTP, logger=logger)
+    roundtrip(NETRC, FtpClass=ska_ftp.SFTP, logger=logger)
 
 
-def test_roundtrip_no_logger():
+def test_roundtrip_no_logger(NETRC):
     # roundtrip(FtpClass=ska_ftp.FTP)
-    roundtrip(FtpClass=ska_ftp.SFTP)
+    roundtrip(NETRC, FtpClass=ska_ftp.SFTP)
 
 
-def test_sftp_mkdir_rmdir_rename():
+def test_sftp_mkdir_rmdir_rename(NETRC):
     user = NETRC[LUCKY]['login']
     homedir = '/home/{}'.format(user)
     lucky = ska_ftp.SFTP(LUCKY, logger=logger)
