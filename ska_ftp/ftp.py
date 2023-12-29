@@ -59,10 +59,7 @@ class SFTP(object):
     :param logger: logger object (e.g. pyyaks.logger.get_logger())
     """
     def __init__(self, host, user=None, passwd=None, netrcfile=None, logger=None):
-        import Crypto.pct_warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', Crypto.pct_warnings.PowmInsecureWarning)
-            import paramiko
+        import paramiko
 
         auths = parse_netrc(netrcfile)
         if host in auths:
