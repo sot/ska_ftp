@@ -13,8 +13,8 @@ logger = pyyaks.logger.get_logger()
 LUCKY = "lucky.cfa.harvard.edu"
 
 
-def roundtrip(parsed_netrc, FtpClass, logger=None):
-    user = parsed_netrc[LUCKY]["login"]
+def roundtrip(user_netrc, FtpClass, logger=None):
+    user = user_netrc[LUCKY]["login"]
     homedir = ("/home/" if FtpClass is ska_ftp.SFTP else "/") + user
     lucky = FtpClass(LUCKY, logger=logger)
     lucky.cd(homedir)
