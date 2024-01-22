@@ -13,10 +13,10 @@ logger = pyyaks.logger.get_logger()
 LUCKY = "lucky.cfa.harvard.edu"
 
 
-def roundtrip(user_netrc, FtpClass, logger=None):
+def roundtrip(user_netrc, ftp_cls, logger=None):
     user = user_netrc[LUCKY]["login"]
-    homedir = ("/home/" if FtpClass is ska_ftp.SFTP else "/") + user
-    lucky = FtpClass(LUCKY, logger=logger)
+    homedir = ("/home/" if ftp_cls is ska_ftp.SFTP else "/") + user
+    lucky = ftp_cls(LUCKY, logger=logger)
     lucky.cd(homedir)
     files_before = lucky.ls()
 
@@ -42,13 +42,13 @@ def roundtrip(user_netrc, FtpClass, logger=None):
 
 
 def test_roundtrip(parsed_netrc):
-    # roundtrip(FtpClass=ska_ftp.FTP, logger=logger)  # legacy of non-secure ftp
-    roundtrip(parsed_netrc, FtpClass=ska_ftp.SFTP, logger=logger)
+    # roundtrip(ftp_cls=ska_ftp.FTP, logger=logger)  # legacy of non-secure ftp
+    roundtrip(parsed_netrc, ftp_cls=ska_ftp.SFTP, logger=logger)
 
 
 def test_roundtrip_no_logger(parsed_netrc):
-    # roundtrip(FtpClass=ska_ftp.FTP)
-    roundtrip(parsed_netrc, FtpClass=ska_ftp.SFTP)
+    # roundtrip(ftp_cls=ska_ftp.FTP)
+    roundtrip(parsed_netrc, ftp_cls=ska_ftp.SFTP)
 
 
 def test_sftp_mkdir_rmdir_rename(parsed_netrc):
